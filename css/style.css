@@ -1,0 +1,37 @@
+body {
+    font-weight: bold;
+    color: #fff;
+}
+canvas {
+    background-color: blue;
+    background-image: url("/deyangame/img/bg.png");
+}
+#scoreForm {
+    position: absolute;
+    /*font-size: 30px;*/
+    font-family: sans-serif 30px red;
+    top: 150px;
+    left: 100px;
+}
+#scoreForm label {
+    display: block;
+    color: #fff;
+}
+.hidden {
+    display: none;
+}
+.visible{
+display: block;
+}
+.container {
+    position: absolute;
+    top: 120px;
+    left: 200px;
+}
+.list h2, .list p {
+    margin: 0;
+    width: 150px;
+    border-bottom: 1px solid #fff;
+    display: inline-block;
+}
+
