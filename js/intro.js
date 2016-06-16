@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 var stage;
 var queue;
@@ -9,10 +9,10 @@ var lives = 1;
 var score = 0;
 var stones = [];
 var enemies = [];
-var superTimer=0;
-var bullets=[];
-var bulletDistance =55;
-var radianConstant = Math.PI/180;
+var superTimer = 0;
+var bullets = [];
+var bulletDistance = 55;
+var radianConstant = Math.PI / 180;
 var hero;
 var keys = {
     rkd: false,
@@ -20,7 +20,6 @@ var keys = {
     ukd: false,
     dkd: false
 };
-var newGame;
 var scoreText;
 var levelText;
 var livesText;
@@ -33,55 +32,51 @@ var nameElement;
 var xmlhttp;
 var container;
 var formHTML;
-function loadRankings(str) {
-    container.className = "container";
-    if (str == "") {
-        parent.innerHTML = "";
-        return;
-    } else {
-        if (window.XMLHttpRequest) {
-            // code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp = new XMLHttpRequest();
-        } else {
-            // code for IE6, IE5
-            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        xmlhttp.onreadystatechange = function() {
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                parent.innerHTML = xmlhttp.responseText;
-            }
-        };
-        xmlhttp.open("GET","loadScores.php");
-        xmlhttp.send();
-    }
-}
 
+function dataSaved(e) {
 
-
-function dataSaved(e){
-
-    loadRankings();
-    formHTML = form.innerHTML;
+    Ajax.get("loadScores.php",
+        loadRankings
+    );
+    // loadRankings();
     form.innerHTML = "Best players: ";
-    console.log(e,"dat is prop saved");
+    console.log(e, "dat is prop saved");
 
 }
+function loadRankings(str) {
+    parent.innerHTML = str;
+    parent.className = "";
+    container.className = "container";
+}
+
 function getStarted() {
 
     nodeToBeCloned = document.querySelector('.list');
     parent = document.querySelector('.rank');
-    container  = document.querySelector('.container');
+    container = document.querySelector('.container');
 
     form = document.querySelector('#scoreForm');
-    nameElement  = document.querySelector('input[name=name]');
+    formHTML = form.innerHTML;
 
     stage = new createjs.Stage(flower);
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener('tick', tock);
     window.addEventListener('keydown', fingerDown);
     window.addEventListener('keyup', fingerUp);
-    window.onkeyup=fingerUp;
-    window.onkeydown=fingerDown;
+    window.onkeyup = fingerUp;
+    window.onkeydown = fingerDown;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        nameElement = document.querySelector('input[name=name]');
+        Ajax.post("saveScore.php", {
+                name: nameElement.value,
+                score: score
+            },
+            dataSaved
+        );
+
+    });
 
     var hero1 = {
 
@@ -93,11 +88,11 @@ function getStarted() {
         ],
         animations: {
             moving: 1,
-            notMoving:0
+            notMoving: 0
         }
     }
-    var ss = new createjs.SpriteSheet(hero1,  true);
-    hero = new createjs.Sprite(ss,'notMoving');
+    var ss = new createjs.SpriteSheet(hero1, true);
+    hero = new createjs.Sprite(ss, 'notMoving');
     hero.width = 86;
     hero.height = 89;
     hero.speed = 5;
@@ -123,18 +118,17 @@ function getStarted() {
     livesText.x = 230;
 
     //display weapon
-    weaponText = new createjs.Text("Weapon "+ superTimer, "20px Courier", "#FFF");
+    weaponText = new createjs.Text("Weapon " + superTimer, "20px Courier", "#FFF");
     stage.addChild(weaponText);
-    weaponText.x=340;
+    weaponText.x = 340;
 
     //start game
     var splash = new createjs.Bitmap("img/bg1.png");
     splash.addEventListener('click', function(e) {
-            console.log(e);
-            stage.removeChild(e.target);
-            gameStarted = true;
-        }
-    );
+        console.log(e);
+        stage.removeChild(e.target);
+        gameStarted = true;
+    });
     stage.addChild(splash);
 }
 
@@ -165,6 +159,7 @@ function moveHero() {
         hero.y = 0;
     }
 }
+
 function fingerUp(e) {
 
     if (e.keyCode === 32) {
@@ -182,10 +177,11 @@ function fingerUp(e) {
     if (e.keyCode === 40) {
         keys.dkd = false;
     }
-    if (!(keys.dkd || keys.lkd || keys.ukd || keys.rkd)){
+    if (!(keys.dkd || keys.lkd || keys.ukd || keys.rkd)) {
         hero.gotoAndStop("notMoving");
     }
 }
+
 function fingerDown(e) {
     hero.gotoAndStop("moving");
     if (e.keyCode === 37) {
@@ -205,7 +201,7 @@ function fingerDown(e) {
 
 function addEnemies() {
     var rand = Math.floor(Math.random() * 100);
-    var chance = level * scoreToNextLevel;
+    // var chance = level * scoreToNextLevel;
     if (rand < 2) {
         var gar = ['gar_1.png', 'gar_2.png', 'gar_3.png', 'gar_4.png', 'gar_5.png', 'gar_6.png', 'gar_7.png'];
         var p = new createjs.Bitmap('img/' + gar[Math.floor(Math.random() * gar.length)]);
@@ -215,7 +211,7 @@ function addEnemies() {
         p.x = Math.floor(Math.random() * stage.canvas.width);
 
         stage.addChild(p);
-        // p.addEventListener(hitTest, removeEnemies);
+
         enemies.push(p);
         var goAgain = true;
         while (goAgain) {
@@ -241,7 +237,7 @@ function addEnemies() {
         stage.addChild(p);
         stones.push(p);
         //different places
-        var goAgain = true;
+        goAgain = true;
         while (goAgain) {
             goAgain = false;
             for (var i = 0; i < enemies.length; i++) {
@@ -261,17 +257,17 @@ function addEnemies() {
 function hitEnemies() {
     var e;
     var b;
-    for(e=0;e<enemies.length;e++){
-        for(b=0;b<bullets.length;b++){
-            if(Math.abs(enemies[e].x+25 - bullets[b].x) < 10 && Math.abs(enemies[e].y+25 - bullets[b].y) < 20){
+    for (e = 0; e < enemies.length; e++) {
+        for (b = 0; b < bullets.length; b++) {
+            if (Math.abs(enemies[e].x + 25 - bullets[b].x) < 10 && Math.abs(enemies[e].y + 25 - bullets[b].y) < 20) {
 
                 //Delete bullet
                 stage.removeChild(bullets[b]);
-                bullets.splice(b,1);
+                bullets.splice(b, 1);
 
                 //Delete enemy
                 stage.removeChild(enemies[e]);
-                enemies.splice(e,1);
+                enemies.splice(e, 1);
 
                 //Add  score
                 score += 1;
@@ -284,38 +280,36 @@ function hitEnemies() {
 }
 //weapon
 function fire() {
-if(superTimer < 1){
-    console.log("Super was fired!");
-    superTimer = 1800;//miliseconds
+    if (superTimer < 1) {
+        console.log("Super was fired!");
+        superTimer = 1800; //miliseconds
 
+        //Create a bunch of bullets at random locations
+        var n = 0;
+        for (n = 0; n < 100; n++) {
+            var b = bullets.length;
 
-    //Create a bunch of bullets at random locations
-    var n=0;
-    for(n=0;n<100;n++){
-        var b = bullets.length;
+            bullets[b] = new createjs.Shape();
+            bullets[b].graphics.beginFill("red");
+            bullets[b].graphics.drawRect(0, 0, 5, 5);
 
-        bullets[b] = new createjs.Shape();
-        bullets[b].graphics.beginFill("red");
-        bullets[b].graphics.drawRect(0,0,5,5);
+            //Position the bullet
+            var tempAngle;
+            tempAngle = (Math.floor(Math.random() * 360)) * radianConstant;
 
-        //Position the bullet
-        var tempAngle;
-        tempAngle = (Math.floor(Math.random()*360))*radianConstant;
-
-        bullets[b].x = hero.x+40 + bulletDistance * Math.cos(tempAngle);
-        bullets[b].y = hero.y+40 + bulletDistance * Math.sin(tempAngle);
-        bullets[b].origin_x=hero.x+40;
-        bullets[b].origin_y=hero.y+40;
-        bullets[b].bulletAngle = tempAngle;
-        bullets[b].bulletDistance = bulletDistance;
-        stage.addChild(bullets[b]);
+            bullets[b].x = hero.x + 40 + bulletDistance * Math.cos(tempAngle);
+            bullets[b].y = hero.y + 40 + bulletDistance * Math.sin(tempAngle);
+            bullets[b].origin_x = hero.x + 40;
+            bullets[b].origin_y = hero.y + 40;
+            bullets[b].bulletAngle = tempAngle;
+            bullets[b].bulletDistance = bulletDistance;
+            stage.addChild(bullets[b]);
+        }
+        //sound
     }
-    //sound
-}
 }
 //bullets
-function moveBullets()
-{
+function moveBullets() {
     var i = 0;
     for (i = 0; i < bullets.length; i++) {
         bullets[i].bulletDistance += 2;
@@ -332,20 +326,8 @@ function moveBullets()
 
 }
 
-function removeEnemies(e) {
-    scoreUp();
-    stage.removeChild(e.target);
-    var index = enemies.indexOf(e.target);
-    enemies.splice(index, 1);
-
-}
-
-
 function hitTest(rect1, rect2) {
-    return !(rect1.x >= rect2.x + rect2.width
-    || rect1.x + rect1.width <= rect2.x
-    || rect1.y >= rect2.y + rect2.height
-    || rect1.y + rect1.height <= rect2.y);
+    return !(rect1.x >= rect2.x + rect2.width || rect1.x + rect1.width <= rect2.x || rect1.y >= rect2.y + rect2.height || rect1.y + rect1.height <= rect2.y);
 }
 
 function levelDown() {
@@ -360,48 +342,37 @@ function levelDown() {
 
 function showScoreBoard() {
 
-	var deadScreen = new createjs.Bitmap("img/bg_dead.png");
+    var deadScreen = new createjs.Bitmap("img/bg_dead.png");
     stage.addChild(deadScreen);
-	var form=document.querySelector("#scoreForm");
+    form = document.querySelector("#scoreForm");
     form.className = "";
 
-		nameElement=document.querySelector('input[name=name]');
-            form.addEventListener('submit', function(e){
-            e.preventDefault();
-		    Ajax.post("saveScore.php",
-		              {name: nameElement.value, score: score},
-		             dataSaved
-		             );
-                
-		})
-        
     var newGame = new createjs.Bitmap("img/bg_dead.png");
     newGame.addEventListener('click', function(e) {
-            console.log(e);
-            stage.removeChild(e.target);
-      // stage.removeChild(newGame);
+        console.log(e);
+        stage.removeChild(e.target);
         resetGame();
-        }
-    );
-     stage.addChild(newGame);
+    });
+    stage.addChild(newGame);
 }
 
-function resetGame(){
+function resetGame() {
     stage.removeAllChildren();
-    enemies=[];
-    form.innerHTML=formHTML;
-    form.className+=" hidden";
-    bullets=[];
+    enemies = [];
+    form.innerHTML = formHTML;
+    form.className += " hidden";
+    parent.className += " hidden";
+    bullets = [];
     //score=0;
-     lives=3;
-    score=0;
-    level=1;
-    superTimer=0;
-    stones=[];
-        gameStarted = true;
-        hero.x = stage.canvas.width / 2;
-        hero.y = stage.canvas.height - hero.height;
-    stage.addChild(hero);   
+    lives = 3;
+    score = 0;
+    level = 1;
+    superTimer = 0;
+    stones = [];
+    gameStarted = true;
+    hero.x = stage.canvas.width / 2;
+    hero.y = stage.canvas.height - hero.height;
+    stage.addChild(hero);
     scoreText = new createjs.Text("Score: " + score, "20px Courier", "#FFF");
     stage.addChild(scoreText);
 
@@ -416,15 +387,12 @@ function resetGame(){
     livesText.x = 230;
 
     //display weapon
-    weaponText = new createjs.Text("Weapon "+ superTimer, "20px Courier", "#FFF");
+    weaponText = new createjs.Text("Weapon " + superTimer, "20px Courier", "#FFF");
     stage.addChild(weaponText);
-    weaponText.x=340;
+    weaponText.x = 340;
 
-    form.className+=" hidden";
-    var ranksTwo=document.querySelector(".list1");
-    ranksTwo.className+=" hidden";
-   
 }
+
 function checkCollisions() {
     var e;
     var eLength = enemies.length - 1;
@@ -433,10 +401,10 @@ function checkCollisions() {
             stage.removeChild(enemies[e]);
             enemies.splice(e, 1);
             scoreUp();
-            if (enemies.length === 0) {
+            /*if (enemies.length === 0) {
                 level++;
                 addEnemies();
-            }
+            }*/
             break;
         }
     }
@@ -453,6 +421,7 @@ function checkCollisions() {
         }
     }
 }
+
 function moveEnemies() {
     var i;
     var numEnemies = enemies.length;
@@ -484,8 +453,6 @@ function scoreUp() {
     }
     scoreText.text = "Score: " + score;
     levelText.text = "Level: " + level;
-
-
 }
 
 function tock(e) {
@@ -497,12 +464,12 @@ function tock(e) {
         moveBullets();
         hitEnemies();
         superTimer--;
-        weaponText.text="Weapon Timer: " + Math.round(superTimer/60);
-        if(superTimer<0){superTimer=0}
-    }
-    ;
+        weaponText.text = "Weapon Timer: " + Math.round(superTimer / 60);
+        if (superTimer < 0) {
+            superTimer = 0
+        }
+    };
 
     stage.update(e);
 
 }
-var ranksTwo = document.getElementsByClassName("list");
