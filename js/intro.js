@@ -65,7 +65,18 @@ function getStarted() {
     window.addEventListener('keyup', fingerUp);
     window.onkeyup = fingerUp;
     window.onkeydown = fingerDown;
-
+ queue=new createjs.LoadQueue(true);
+    queue.installPlugin(createjs.Sound);
+    queue.loadManifest(
+        //sound
+        {id:"fireWepon",
+        src:"sounds/weapon.mp3"},
+        {id:"deadSound",
+        src:"sounds/dead.mp3"}
+    
+    
+    
+    );
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         nameElement = document.querySelector('input[name=name]');
@@ -305,7 +316,8 @@ function fire() {
             bullets[b].bulletDistance = bulletDistance;
             stage.addChild(bullets[b]);
         }
-        //sound
+        //soundfir
+        createjs.Sound.play("fireWepon");
     }
 }
 //bullets
