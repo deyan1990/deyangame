@@ -5,7 +5,7 @@ var queue;
 var level = 1;
 var scoreToNextLevel = 20;
 var gameStarted = false;
-var lives = 1;
+var lives = 3;
 var score = 0;
 var stones = [];
 var enemies = [];
@@ -67,16 +67,18 @@ function getStarted() {
     window.onkeydown = fingerDown;
  queue=new createjs.LoadQueue(true);
     queue.installPlugin(createjs.Sound);
-    queue.loadManifest(
+    queue.loadManifest([
         //sound
         {id:"fireWepon",
         src:"sounds/weapon.mp3"},
-        {id:"deadSound",
-        src:"sounds/dead.mp3"}
+        {id:"dead",
+        src:"sounds/scream-01.mp3"}
+       
+       
     
     
     
-    );
+        ]);
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         nameElement = document.querySelector('input[name=name]');
@@ -343,7 +345,8 @@ function hitTest(rect1, rect2) {
 }
 
 function levelDown() {
-    lives--;
+    lives--; 
+    createjs.Sound.play("dead");
     console.log("You just lost a life and have " + lives);
     if (lives === 0) {
         showScoreBoard();
@@ -351,6 +354,7 @@ function levelDown() {
     }
     livesText.text = "Lives: " + lives;
 }
+
 
 function showScoreBoard() {
 
@@ -408,7 +412,7 @@ function resetGame() {
 function checkCollisions() {
     var e;
     var eLength = enemies.length - 1;
-    for (e = eLength; e >= 0; e--) {
+    for (e = eLength; e >= 0; e--){
         if (hitTest(enemies[e], hero)) {
             stage.removeChild(enemies[e]);
             enemies.splice(e, 1);
